@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Universe V2</title>
+    <style>
+        /* --- ORIGINAL CSS FROM CONTEXT 1 --- */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100vh;
+            background: radial-gradient(circle at center, #020617 0%, #000 100%);
+            font-family: 'Segoe UI', sans-serif; color: white;
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+
+        .stars {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: 10vw 20vh #fff, 50vw 10vh #fff, 80vw 40vh #fff, 20vw 70vh #fff, 60vw 90vh #fff;
+            opacity: 0.3; z-index: 0;
+        }
+
+        /* Landing UI */
+        #landing { text-align: center; z-index: 10; transition: opacity 0.5s; cursor: pointer; }
+        h1 { font-size: 5rem; margin: 0; letter-spacing: 15px; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .prompt { font-size: 1.2rem; opacity: 0.6; letter-spacing: 4px; margin-bottom: 5px; }
+        .phrase-container { height: 30px; overflow: hidden; margin-top: 10px; }
+        #phrase-display { display: block; font-weight: bold; font-size: 1.1rem; transition: all 0.5s ease; }
+
+        /* Main Interface */
+        #app-interface {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; z-index: 5; opacity: 0; transition: opacity 0.5s;
+        }
+
+        nav { display: flex; justify-content: center; gap: 30px; padding: 25px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        .tab-btn { font-size: 1.1rem; cursor: pointer; transition: 0.3s; user-select: none; font-weight: 600; }
+        .active-tab { color: white; border-bottom: 2px solid white; }
+        .inactive-tab { color: #888; }
+
+        .view { display: none; padding: 40px; overflow-y: auto; flex-grow: 1; }
+        .view.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; align-content: start; }
+        #settings-view.active { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+
+        /* Game Cards */
+        .link-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px; text-align: center; border-radius: 18px; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative;
+        }
+        .link-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: #fff; }
+        .link-card img { width: 64px; height: 64px; border-radius: 12px; background: rgba(0,0,0,0.2); }
+        .link-card span { font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; }
+
+        /* NEW: Direct Open Button */
+        .direct-btn {
+            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
+            background: rgba(255,255,255,0.1); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; opacity: 0;
+        }
+        .link-card:hover .direct-btn { opacity: 1; }
+        .direct-btn:hover { background: white; color: black; }
+
+        /* Settings Components */
+        .settings-box {
+            background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px;
+            width: 100%; max-width: 450px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        input {
+            width: 85%; padding: 10px; border-radius: 5px; border: 1px solid #444;
+            background: #111; color: white; margin-bottom: 10px; outline: none;
+        }
+        button {
+            padding: 10px 25px; border-radius: 5px; border: none;
+            background: white; color: black; font-weight: bold; cursor: pointer;
+        }
+        .hidden { opacity: 0 !important; pointer-events: none; }
+        .show-app { display: flex !important; opacity: 1 !important; }
+
+        /* Regular Games Styles */
+        #regular-games-view .link-card {
+            background: rgba(200, 200, 200, 0.05); /* Slightly different background */
+        }
+        #regular-games-view .link-card:hover {
+            background: rgba(200, 200, 200, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <div id="landing" onclick="startApp()">
+        <h1>UNIVERSE V2</h1>
+        <p class="prompt">CLICK TO GET STARTED</p>
+        <div class="phrase-container">
+            <span id="phrase-display">Made for Students, By Makar</span>
+        </div>
+    </div>
+
+    <div id="app-interface">
+        <nav>
+            <span id="tab-games" class="tab-btn" onclick="switchTab('games')">Games</span>
+            <span id="tab-regular-games" class="tab-btn" onclick="switchTab('regular-games')">Regular Games</span>
+            <span id="tab-settings" class="tab-btn inactive-tab" onclick="switchTab('settings')">Settings</span>
+        </nav>
+
+        <div id="games-view" class="view"></div>
+        <div id="regular-games-view" class="view"></div>
+
+        <div id="settings-view" class="view">
+            <div class="settings-box">
+                <h3>Tab Masking</h3>
+                <input type="text" id="mask-title" placeholder="Tab Title" value="Google Docs">
+                <input type="text" id="mask-icon" placeholder="Favicon URL" value="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
+            </div>
+            <div class="settings-box">
+                <h3>Custom Launcher</h3>
+                <input type="text" id="custom-url" placeholder="https://example.com">
+                <br>
+                <button onclick="launchCustom()">Launch Masked</button>
+            </div>
+            <div class="settings-box">
+                <h3>Actions</h3>
+                <button onclick="cloakCurrent()">Cloak This Site</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATABASES ---
+        const games = [
+            { name: "Vapor V4", url: "https://ge-lao-shi.global.ssl.fastly.net/" },
+            { name: "Jordan's Math", url: "https://learn.ham-tetra.es/" },
+            { name: "N-Gon", url: "https://valsamisphysics.com/sidescroller/index.html" },
+            { name: "Masha Learning", url: "https://mashalearning.com/c/game?gid=649" },
+            { name: "Daydream X", url: "https://study.info.north-kazakhstan.su.cdn.cloudflare.net/" },
+            { name: "Utopia", url: "https://cool.wikilegia.org/" },
+            { name: "LuminalOS 1", url: "https://iloveteachers.graphicon.org/" },
+            { name: "LuminalOS 2", url: "https://playernation.goodfox.com.br/" },
+            { name: "Vapor 3.8", url: "https://gelaoshi.global.ssl.fastly.net/" },
+            { name: "Rammerhead 1", url: "https://damianlikesjulie.wakemeup.ru/" },
+            { name: "Rammerhead 2", url: "https://notdominospizzeria.fluxus.org/" },
+            { name: "Rammerhead 3", url: "https://wecanbebees.primeflk.ch/" },
+            { name: "Rammerhead 4", url: "https://frittledsocool.bostoncareercounselor.com/" },
+            { name: "Rammerhead 5", url: "https://areyousure.bostoncareercounselor.com/" },
+            { name: "Rammerhead 6", url: "https://thatswhattheywantyoutothink.bostoncareercounselor.com/" },
+            { name: "Gn Math 1", url: "https://sigma-skull-emoji-17246216.codehs.me/index.html" },
+            { name: "Gn Math 2", url: "https://gn-math-67-17246219.codehs.me/index.html" },
+            { name: "Gn Math 3", url: "https://brainrot-88-17246223.codehs.me/index.html" },
+            { name: "Gn Math 4", url: "https://funni-steam-web-17246226.codehs.me/index.html" },
+            { name: "Gn Math 5", url: "https://six-seven-five-five-17246203.codehs.me/index.html" },
+            { name: "Gn Math 6", url: "https://mathlessonsproski-17246090.codehs.me/index.html" },
+            { name: "Gn Math 7", url: "https://roblock-is-life-67-17245755.codehs.me/" },
+            { name: "Gn Math 8", url: "https://trombone-is-da-best-intrument-17245404.codehs.me/" },
+            { name: "Gn Math 9", url: "https://goob-17245597.codehs.me/" },
+            { name: "Gn Math 10", url: "https://spar-kart-sunday-17245573.codehs.me/" },
+            { name: "Gn Math 11", url: "https://object-fighters-is-peak-17245571.codehs.me/" },
+            { name: "Gn Math 12", url: "https://new-sandbox-program-9-17245499.codehs.me/" },
+            { name: "Gn Math 13", url: "https://homework-gaming-17245536.codehs.me/" },
+            { name: "Gn Math 14", url: "https://slingshotswitch-17245605.codehs.me/" },
+            { name: "Gn Math 15", url: "https://indexkool-17244295.codehs.me/index.html" },
+            { name: "Gn Math 16", url: "https://crimsonviper8605.codehs.me/" }
+        ];
+
+        const regularGames = [
+            // Examples (replace with actual games)
+            { name: "Chess", command: "chess.exe", image: "chess.png" }, // Assuming chess.exe exists
+            { name: "Solitaire", command: "solitaire.exe", image: "solitaire.png" },
+            { name: "Minecraft", command: "minecraft.exe", image: "minecraft.png"}
+        ];
+
+        // --- DOM Elements ---
+        const gamesView = document.getElementById('games-view');
+        const regularGamesView = document.getElementById('regular-games-view');
+
+        // --- Function to Populate Game Grids ---
+        function populateGames(gameArray, viewElement, isWebsite = true) {
+            viewElement.innerHTML = ''; // Clear existing content
+
+            gameArray.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+
+                let innerHTML = '';
+
+                if (isWebsite) {
+                    let domain = "google.com";
+                    try { domain = new URL(game.url).hostname; } catch(e) {}
+                    card.onclick = () => openProxy(game.url);
+
+                    innerHTML = `
+                        <div class="direct-btn" onclick="event.stopPropagation(); window.open('${game.url}', '_blank')">↗</div>
+                        <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${game.name}" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=128'">
+                        <span>${game.name}</span>
+                    `;
+                } else {
+                    // Regular Game Logic
+                    card.onclick = () => launchRegularGame(game.command);
+                    innerHTML = `
+                        <img src="${game.image}" alt="${game.name}" onerror="this.src='default_game_icon.png'">
+                        <span>${game.name}</span>
+                    `;
+                }
+                card.innerHTML = innerHTML;
+                viewElement.appendChild(card);
+            });
+        }
+
+        //Initial population of games
+        populateGames(games, gamesView)
+        populateGames(regularGames, regularGamesView, false)
+
+        // --- Adding New Games (Example) ---
+        function addRegularGame(name, command, image = "default_game_icon.png") {
+            regularGames.push({ name: name, command: command, image: image });
+            populateGames(regularGames, regularGamesView, false); // Refresh the view
+        }
+
+        //Example usage
+        // addRegularGame("My New Game", "C:\\Games\\newgame.exe", "newgame.png");
+
+        // --- Function to Launch Regular Games ---
+        function launchRegularGame(command) {
+            //  Security Considerations:  Directly executing commands from the browser
+            //  is a significant security risk.  This *will not* work directly in a web browser.
+
+            //  This is placeholder functionality.  To make this work, you would need
+            //  a backend server component that can safely execute commands on the
+            //  server's operating system.  The browser would then send a request
+            //  to the server to launch the game.
+
+            alert(`Simulating launch: ${command} (Actual execution not possible in browser).`);
+
+            //  Example of how you *might* send a request to a backend server:
+            //  fetch('/launch_game', { method: 'POST', body: JSON.stringify({ command: command }) });
+        }
+
+        // Phrase Scroller (unchanged)
+        const phrases = ["Made for Students, By Makar", "Henlo", ":)", "прижет, жорик", "click it already", "bruh where is the privacy these days . . ."];
+        let pIdx = 0;
+        const pDisp = document.getElementById('phrase-display');
+        setInterval(() => {
+            pDisp.style.opacity = 0;
+            pDisp.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                pIdx = (pIdx + 1) % phrases.length;
+                pDisp.innerText = phrases[pIdx];
+                pDisp.style.color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 65%)`;
+                pDisp.style.transform = 'translateY(20px)';
+                setTimeout(() => { pDisp.style.opacity = 1; pDisp.style.transform = 'translateY(0)'; }, 50);
+            }, 500);
+        }, 5000);
+
+        // Start App (unchanged)
+        function startApp() {
+            document.getElementById('landing').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('landing').style.display = 'none';
+                document.getElementById('app-interface').classList.add('show-app');
+                switchTab('games');
+            }, 500);
+        }
+
+        // Switch Tab Function (Modified)
+        function switchTab(tab) {
+            const gV = document.getElementById('games-view');
+            const rGV = document.getElementById('regular-games-view');
+            const sV = document.getElementById('settings-view');
+
+            const gT = document.getElementById('tab-games');
+            const rGT = document.getElementById('tab-regular-games');
+            const sT = document.getElementById('tab-settings');
+
+            //Deactivate all tabs and views
+            gV.classList.remove('active');
+            rGV.classList.remove('active');
+            sV.classList.remove('active');
+
+            gT.className = 'tab-btn inactive-tab';
+            rGT.className = 'tab-btn inactive-tab';
+            sT.className = 'tab-btn inactive-tab';
+
+            //Activate the selected tab and view
+            if(tab === 'games') {
+                gV.classList.add('active');
+                gT.className = 'tab-btn active-tab';
+            } else if (tab === 'regular-games') {
+                rGV.classList.add('active');
+                rGT.className = 'tab-btn active-tab';
+            } else {
+                sV.classList.add('active');
+                sT.className = 'tab-btn active-tab';
+            }
+        }
+
+        // Open Proxy (unchanged)
+        function openProxy(url) {
+            const win = window.open('about:blank', '_blank');
+            if (!win) return alert("Pop-up blocked!");
+            const title = document.getElementById('mask-title').value;
+            const icon = document.getElementById('mask-icon').value;
+
+            win.document.write(`
+                <html><head>
+                <title>${title}</title><link rel="icon" href="${icon}">
+                <style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}iframe{width:100%;height:100%;border:none;}</style>
+                </head><body><iframe src="${url}" referrerpolicy="no-referrer"></iframe></body></html>
+            `);
+            win.document.close();
+        }
+
+        // Launch Custom (unchanged)
+        function launchCustom() {
+            const val = document.getElementById('custom-url').value;
+            if(val) openProxy(val.startsWith('http') ? val : 'https://' + val);
+        }
+
+        // Cloak Current (unchanged)
+        function cloakCurrent() { openProxy(window.location.href); }
+    </script>
+</body>
+</html>
