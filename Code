@@ -4,62 +4,85 @@
     <meta charset="UTF-8" />
     <title>Universe V2</title>
     <style>
-      /* --- ORIGINAL CSS --- */
-      body, html { margin: 0; padding: 0; width: 100%; height: 100vh; background: radial-gradient(circle at center, #020617 0%, #000 100%); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-      .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; box-shadow: 10vw 20vh #fff, 50vw 10vh #fff, 80vw 40vh #fff, 20vw 70vh #fff, 60vw 90vh #fff; opacity: 0.3; z-index: 0; }
-      #landing { text-align: center; z-index: 10; transition: opacity 0.5s; cursor: pointer; }
+      /* --- CORE STYLES --- */
+      body, html {
+        margin: 0; padding: 0; width: 100%; height: 100vh;
+        background: radial-gradient(circle at center, #020617 0%, #000 100%);
+        font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden;
+        display: flex; justify-content: center; align-items: center;
+      }
+      .stars {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        box-shadow: 10vw 20vh #fff, 50vw 10vh #fff, 80vw 40vh #fff, 20vw 70vh #fff, 60vw 90vh #fff;
+        opacity: 0.3; z-index: 0;
+      }
+
+      /* --- TRANSITION STYLES --- */
+      #landing {
+        text-align: center; z-index: 10;
+        transition: opacity 0.8s ease, transform 0.8s ease;
+        cursor: pointer;
+      }
+      #app-interface {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; z-index: 5;
+        opacity: 0; pointer-events: none;
+        transition: opacity 1s ease;
+      }
+      .show-app { opacity: 1 !important; pointer-events: all !important; }
+      .fade-out { opacity: 0; transform: scale(1.1); pointer-events: none; }
+
       h1 { font-size: 5rem; margin: 0; letter-spacing: 15px; text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
       .prompt { font-size: 1.2rem; opacity: 0.6; letter-spacing: 4px; margin-bottom: 5px; }
-      .phrase-container { height: 30px; overflow: hidden; margin-top: 10px; }
-      #phrase-display { display: block; font-weight: bold; font-size: 1.1rem; transition: all 0.5s ease; }
-      #app-interface { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 5; opacity: 0; transition: opacity 0.5s; }
-      nav { display: flex; justify-content: center; gap: 30px; padding: 25px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); }
+      #phrase-display { display: block; font-weight: bold; font-size: 1.1rem; transition: opacity 0.5s; height: 30px; margin-top: 10px; }
+
+      nav { display: flex; justify-content: center; gap: 30px; padding: 25px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
       .tab-btn { font-size: 1.1rem; cursor: pointer; transition: 0.3s; user-select: none; font-weight: 600; }
       .active-tab { color: white; border-bottom: 2px solid white; }
       .inactive-tab { color: #888; }
+
       .view { display: none; padding: 40px; overflow-y: auto; flex-grow: 1; }
       .view.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; align-content: start; }
-      #settings-view.active { display: flex; flex-direction: column; align-items: center; gap: 25px; }
-      .link-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; text-align: center; border-radius: 18px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; }
-      .link-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: #fff; }
-      .link-card img { width: 64px; height: 64px; border-radius: 12px; background: rgba(0, 0, 0, 0.2); object-fit: contain; }
-      .link-card span { font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; }
-      .direct-btn { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; opacity: 0; }
-      .link-card:hover .direct-btn { opacity: 1; }
-      .direct-btn:hover { background: white; color: black; }
-      .settings-box { background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); }
-      input { width: 85%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #111; color: white; margin-bottom: 10px; outline: none; }
-      button { padding: 10px 25px; border-radius: 5px; border: none; background: white; color: black; font-weight: bold; cursor: pointer; }
-      .hidden { opacity: 0 !important; pointer-events: none; }
-      .show-app { display: flex !important; opacity: 1 !important; }
-      #regular-games-view .link-card { background: rgba(200, 200, 200, 0.05); }
-      #regular-games-view .link-card:hover { background: rgba(200, 200, 200, 0.15); }
 
-      /* BROTATO SPECIFIC STYLES */
-      .brotato-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          display: none; /* Hidden by default */
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          background-color: black;
-          z-index: 100; /* Ensure it's above other elements */
+      /* --- SEARCH UI --- */
+      #search-view { flex-direction: column; align-items: center; display: none; }
+      #search-view.active { display: flex; }
+      .search-header { width: 100%; max-width: 600px; text-align: center; margin-bottom: 20px; }
+      .search-logo { font-size: 3.5rem; font-weight: 800; background: linear-gradient(90deg, #fff, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
+      .search-box { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+      .search-box input {
+        width: 100%; padding: 15px 25px; font-size: 1.1rem; border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05);
+        color: white; outline: none; transition: 0.3s; box-sizing: border-box;
       }
-      .brotato-status-container {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          background: #000;
+      .search-box input:focus { border-color: #fff; background: rgba(255,255,255,0.1); }
+      #node-select { align-self: center; background: #111; color: #888; border: 1px solid #333; padding: 6px 15px; border-radius: 10px; cursor: pointer; }
+
+      #search-results-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; margin-top: 30px; }
+
+      /* --- CARDS --- */
+      .link-card {
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px; text-align: center; border-radius: 18px; cursor: pointer;
+        transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative;
       }
-      .brotato-progress-container { width: 300px; height: 10px; background: #333; border-radius: 5px; margin-top: 20px; overflow: hidden; border: 1px solid #444; }
-      .brotato-progress-bar { width: 0%; height: 100%; background: #fc2651; transition: width 0.2s; }
-      .brotato-status-text { font-size: 18px; font-weight: bold; }
-      #brotato-canvas { display: block; width: 100vw; height: 100vh; }
+      .link-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: #fff; }
+      .link-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; background: #000; }
+      .link-card span { font-size: 0.9rem; font-weight: bold; }
+
+      /* --- SETTINGS --- */
+      #settings-view.active { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+      .settings-box { background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); }
+      .settings-box input { width: 90%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #111; color: white; margin-bottom: 12px; outline: none; }
+      button { padding: 12px 30px; border-radius: 8px; border: none; background: white; color: black; font-weight: bold; cursor: pointer; transition: 0.2s; }
+
+      /* --- OVERLAY BROWSER --- */
+      #browser-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 2000; display: none; flex-direction: column;
+      }
+      .browser-bar { padding: 10px 20px; background: #111; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; }
+      #browser-frame { width: 100%; flex-grow: 1; border: none; background: white; }
     </style>
   </head>
   <body>
@@ -68,19 +91,34 @@
     <div id="landing" onclick="startApp()">
       <h1>UNIVERSE V2</h1>
       <p class="prompt">CLICK TO GET STARTED</p>
-      <div class="phrase-container">
-        <span id="phrase-display">Made for Students, By Makar</span>
-      </div>
+      <div id="phrase-display">Made for Students, By Makar</div>
     </div>
 
     <div id="app-interface">
       <nav>
-        <span id="tab-games" class="tab-btn" onclick="switchTab('games')">Games</span>
-        <span id="tab-regular-games" class="tab-btn" onclick="switchTab('regular-games')">Regular Games</span>
+        <span id="tab-search" class="tab-btn" onclick="switchTab('search')">Search</span>
+        <span id="tab-games" class="tab-btn inactive-tab" onclick="switchTab('games')">Proxy Sites</span>
+        <span id="tab-regular-games" class="tab-btn inactive-tab" onclick="switchTab('regular-games')">Games</span>
         <span id="tab-settings" class="tab-btn inactive-tab" onclick="switchTab('settings')">Settings</span>
       </nav>
+
+      <div id="search-view" class="view">
+        <div class="search-header">
+          <div class="search-logo">Rammerhead</div>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search the web securely..." onkeydown="if(event.key==='Enter') runSearch()">
+            <select id="node-select">
+              <option value="https://damianlikesjulie.wakemeup.ru/">Main Node</option>
+              <option value="https://notdominospizzeria.fluxus.org/">Backup Node</option>
+            </select>
+          </div>
+        </div>
+        <div id="search-results-grid"></div>
+      </div>
+
       <div id="games-view" class="view"></div>
       <div id="regular-games-view" class="view"></div>
+
       <div id="settings-view" class="view">
         <div class="settings-box">
           <h3>Tab Masking</h3>
@@ -90,8 +128,7 @@
         <div class="settings-box">
           <h3>Custom Launcher</h3>
           <input type="text" id="custom-url" placeholder="https://example.com" />
-          <br />
-          <button onclick="launchCustom()">Launch Masked</button>
+          <br><button onclick="launchCustom()">Launch Masked</button>
         </div>
         <div class="settings-box">
           <h3>Actions</h3>
@@ -100,323 +137,114 @@
       </div>
     </div>
 
-    <!-- Brotato Game Container -->
-    <div id="brotato-container" class="brotato-container">
-        <div id="brotato-status" class="brotato-status-container">
-            <div id="brotato-status-text">Merging game files...</div>
-            <div class="brotato-progress-container"><div id="brotato-progress-bar" class="brotato-progress-bar"></div></div>
-            <p style="font-size: 12px; color: #888;">This may take 30-60 seconds (150MB total)</p>
-        </div>
-        <canvas id="brotato-canvas">Your browser does not support HTML5 canvas.</canvas>
+    <div id="browser-overlay">
+      <div class="browser-bar">
+        <span id="browser-url-text" style="color:#666; font-size:0.8rem;">Loading Secure Proxy...</span>
+        <button onclick="closeBrowser()" style="background:#cc0000; color:white; padding:5px 15px; border-radius:5px;">✕ Exit</button>
+      </div>
+      <iframe id="browser-frame" src="about:blank" referrerpolicy="no-referrer"></iframe>
     </div>
 
     <script>
-      // --- THE NEW GAME CODES ---
-      const slopeCode = `
-        <html>
-          <head>
-            <title>Study Session</title>
-            <style>body,html{margin:0;padding:0;height:100vh;overflow:hidden;background:#231f20;}</style>
-            <script src="https://cdn.jsdelivr.net/gh/scheng123321/tmm-html5-cdn1@51a72f0faa2d9cd524a0c11b4ca368350f988458/slope/TemplateData/UnityProgress.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/scheng123321/tmm-html5-cdn1@51a72f0faa2d9cd524a0c11b4ca368350f988458/slope/TemplateData/unityloader41.js"><\/script>
-          </head>
-          <body>
-            <div id="gameContainer" style="width:100vw; height:100vh;"></div>
-            <script>
-                window.onload = function() {
-                    UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/scheng123321/tmm-html5-cdn1@51a72f0faa2d9cd524a0c11b4ca368350f988458/slope/Build/slope.json");
-                };
-            <\/script>
-          </body>
-        </html>
-      `;
+      // --- TRANSITION LOGIC ---
+      function startApp() {
+        const landing = document.getElementById('landing');
+        const app = document.getElementById('app-interface');
+        landing.classList.add('fade-out');
+        setTimeout(() => {
+          landing.style.display = 'none';
+          app.classList.add('show-app');
+          switchTab('search');
+        }, 800);
+      }
 
-      const oneVoneCode = `
-        <html>
-          <head>
-            <title>Classes</title>
-            <style>body,html{margin:0;padding:0;height:100vh;overflow:hidden;background:#000;}</style>
-            <script>
-                // WebSocket Proxy to unblock multiplayer
-                window.rWS = WebSocket;
-                WebSocket = function(url, options) {
-                    var split = url.split('://');
-                    var prefix = '';
-                    switch (split[0].toLowerCase()) {
-                        case 'ws': prefix = 'wss://onebigorange-tmm.tbt.mx/websocket/http://'; break;
-                        case 'wss': prefix = 'wss://onebigorange-tmm.tbt.mx/websocket/https://'; break;
-                        default: prefix = split[0];
-                    }
-                    return new(Function.prototype.bind.call(window.rWS, null, (split[1].match(/\\//g) || []).length === 0 ? (split[1].includes('?') ? prefix + split[1].replace('?', '/?') : prefix + split[1] + '/') : prefix + split[1], options));
-                };
-            <\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-app.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-auth.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-firestore.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/UnityProgress.js"><\/script>
-            <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.js"><\/script>
-          </head>
-          <body>
-            <div id="gameContainer" style="width:100%; height:100%;"></div>
-            <script>
-                // Initialization helpers
-                // Mocking firebaseLogin and initializeFirestore to prevent errors
-                window.firebaseLogin = function(p, s, e) { if(s) s({token:"", displayName:"Guest"}); };
-                window.initializeFirestore = function() { console.log("Firestore ready"); };
+      function switchTab(tab) {
+        ['search', 'games', 'regular-games', 'settings'].forEach(t => {
+          document.getElementById(`${t}-view`).classList.remove('active');
+          document.getElementById(`tab-${t}`).className = 'tab-btn inactive-tab';
+        });
+        document.getElementById(`${tab}-view`).classList.add('active');
+        document.getElementById(`tab-${tab}`).className = 'tab-btn active-tab';
+      }
 
-                window.onload = function () {
-                    // Ensure any existing initializeFireBase function is called, and our mock is available.
-                    if (typeof initializeFireBase === 'function') {
-                        initializeFireBase();
-                    } else {
-                        // If initializeFireBase is not defined, but firebaseLogin is, call it.
-                        if (typeof firebaseLogin === 'function') {
-                            firebaseLogin();
-                        }
-                    }
-                    
-                    if(typeof initializeFirestore === 'function') initializeFirestore();
-                    
-                    var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.json", {
-                        onProgress: UnityProgress,
-                        Module: {
-                            onRuntimeInitialized: function () {
-                                console.log("Unity Ready");
-                            },
-                        },
-                    });
-                };
-                function requestNewAd(){ console.log("Ad Blocked"); }
-            <\/script>
-          </body>
-        </html>
-      `;
+      // --- SEARCH ENGINE ---
+      function runSearch() {
+        const q = document.getElementById('search-input').value.trim();
+        const grid = document.getElementById('search-results-grid');
+        if (!q) return;
+        grid.innerHTML = '';
 
-      // BROTATO GAME CODE (Integrated into the main script)
-      const brotatoBaseUrl = "https://cdn.jsdelivr.net/gh/Stinkalistic/UGS@main/MISC/brotato/";
-      const brotatoConfig = {
-          "args": [],
-          "canvasResizePolicy": 2,
-          "executable": "index",
-          "fileSizes": {"index.pck": 138330272, "index.wasm": 25658069},
-          "focusCanvas": true
-      };
-      let brotatoEngine = null;
-      let brotatoIsLoaded = false;
+        let url = q.includes('.') && !q.includes(' ') ? (q.startsWith('http') ? q : 'https://' + q) : `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 
-      // --- DATABASES ---
-      const games = [
-        { name: 'Vapor V4', url: 'https://ge-lao-shi.global.ssl.fastly.net/' },
-        { name: "Jordan's Math", url: 'https://learn.ham-tetra.es/' },
-        { name: 'N-Gon', url: 'https://valsamisphysics.com/sidescroller/index.html' },
-        { name: 'Masha Learning', url: 'https://mashalearning.com/c/game?gid=649' },
-        { name: 'Daydream X', url: 'https://study.info.north-kazakhstan.su.cdn.cloudflare.net/' },
-        { name: 'Utopia', url: 'https://cool.wikilegia.org/' },
-        { name: 'LuminalOS 1', url: 'https://iloveteachers.graphicon.org/' },
-        { name: 'LuminalOS 2', url: 'https://playernation.goodfox.com.br/' },
-        { name: 'Rammerhead 1', url: 'https://damianlikesjulie.wakemeup.ru/' },
-        { name: 'Rammerhead 2', url: 'https://notdominospizzeria.fluxus.org/' },
-        { name: 'Rammerhead 3', url: 'https://wecanbebees.primeflk.ch/' }
-      ];
+        const options = [
+          { name: q, url: url, label: 'Direct Site' },
+          { name: 'Google', url: `https://www.google.com/search?q=${encodeURIComponent(q)}`, label: 'Search Results' },
+          { name: 'YouTube', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`, label: 'Video' }
+        ];
 
-      const regularGames = [
-        { name: 'Slope', command: 'internal_slope', image: 'https://ssl.gstatic.com/classroom/favicon.png' },
-        { name: '1v1.LOL', command: 'internal_1v1', image: 'https://cdn-icons-png.flaticon.com/512/3593/3593452.png' },
-        { name: 'Brotato', command: 'internal_brotato', image: 'https://cdn-icons-png.flaticon.com/512/11771/11771337.png' }, // Added Brotato image
-        { name: 'Chess', command: 'chess.exe', image: 'https://cdn-icons-png.flaticon.com/512/2873/2873176.png' },
-        { name: 'Solitaire', command: 'solitaire.exe', image: 'https://cdn-icons-png.flaticon.com/512/3229/3229895.png' }
-      ];
-
-      // --- LOGIC ---
-      function populateGames(gameArray, viewElement, isWebsite = true) {
-        viewElement.innerHTML = '';
-        gameArray.forEach((game) => {
+        options.forEach(opt => {
           const card = document.createElement('div');
           card.className = 'link-card';
-          if (isWebsite) {
-            let domain = 'google.com';
-            try { domain = new URL(game.url).hostname; } catch (e) {}
-            card.onclick = () => openProxy(game.url);
-            card.innerHTML = `<div class="direct-btn" onclick="event.stopPropagation(); window.open('${game.url}', '_blank')">↗</div>
-                <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${game.name}">
-                <span>${game.name}</span>`;
-          } else {
-            card.onclick = () => launchRegularGame(game.command);
-            card.innerHTML = `<img src="${game.image}" alt="${game.name}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4436/4436481.png'">
-                <span>${game.name}</span>`;
-          }
-          viewElement.appendChild(card);
+          card.onclick = () => openProxy(opt.url);
+          card.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${opt.url}&sz=128"><span>${opt.name}</span><small style="opacity:0.4">${opt.label}</small>`;
+          grid.appendChild(card);
         });
       }
 
-      function launchRegularGame(command) {
-        if (command === 'internal_brotato') {
-            launchBrotato();
-            return;
-        }
+      function openProxy(target) {
+        const node = document.getElementById('node-select').value;
+        const overlay = document.getElementById('browser-overlay');
+        const frame = document.getElementById('browser-frame');
+        
+        overlay.style.display = 'flex';
+        // Improved Rammerhead URL injection
+        frame.src = node + "main/" + target;
+        document.getElementById('browser-url-text').innerText = "Proxied: " + target;
+      }
+
+      function closeBrowser() {
+        document.getElementById('browser-overlay').style.display = 'none';
+        document.getElementById('browser-frame').src = 'about:blank';
+      }
+
+      // --- SETTINGS ---
+      function launchCustom() { 
+        const u = document.getElementById('custom-url').value;
+        if(u) openCloaked(u); 
+      }
+      function cloakCurrent() { openCloaked(window.location.href); }
+      function openCloaked(url) {
         const win = window.open('about:blank', '_blank');
-        if (!win) return alert('Pop-up blocked!');
-        if (command === 'internal_slope') win.document.write(slopeCode);
-        else if (command === 'internal_1v1') win.document.write(oneVoneCode);
-        else { win.close(); alert(`Simulating launch: ${command}`); return; }
+        const t = document.getElementById('mask-title').value;
+        const i = document.getElementById('mask-icon').value;
+        win.document.write(`<html><head><title>${t}</title><link rel="icon" href="${i}"></head><body style="margin:0;overflow:hidden;"><iframe src="${url}" style="width:100%;height:100vh;border:none;"></iframe></body></html>`);
         win.document.close();
       }
 
-      // --- Brotato Launch Logic ---
-      async function launchBrotato() {
-          if (brotatoIsLoaded) {
-              showBrotato();
-              return;
-          }
+      // --- INIT DATA ---
+      const games = [{name:'Vapor V4', url:'https://ge-lao-shi.global.ssl.fastly.net/'}, {name:"Jordan's Math", url:'https://learn.ham-tetra.es/'}];
+      const native = [{name:'Slope', img:'https://ssl.gstatic.com/classroom/favicon.png'}, {name:'1v1.LOL', img:'https://cdn-icons-png.flaticon.com/512/3593/3593452.png'}];
 
-          const brotatoContainer = document.getElementById('brotato-container');
-          const brotatoStatusText = document.getElementById('brotato-status-text');
-          const brotatoProgressBar = document.getElementById('brotato-progress-bar');
-
-          // Show the Brotato container and hide other interfaces
-          document.getElementById('app-interface').classList.remove('show-app');
-          document.getElementById('landing').classList.add('hidden');
-          document.getElementById('landing').style.display = 'none';
-          brotatoContainer.style.display = 'flex';
-          document.body.style.overflow = 'hidden'; // Prevent scrolling
-
-          const originalFetch = window.fetch;
-          async function mergeFiles(name, count) {
-              let buffers = [];
-              for (let i = 1; i <= count; i++) {
-                  const partUrl = `${brotatoBaseUrl}${name}.part${i}`;
-                  const resp = await originalFetch(partUrl);
-                  if (!resp.ok) throw new Error(`Failed to download ${partUrl}`);
-                  const data = await resp.arrayBuffer();
-                  buffers.push(data);
-                  const totalSize = brotatoConfig.fileSizes[`${name}`] || 0;
-                  const downloadedSize = buffers.reduce((acc, buf) => acc + buf.byteLength, 0);
-                  const percent = Math.min(100, Math.floor((downloadedSize / totalSize) * 100));
-                  brotatoStatusText.innerText = `Downloading ${name} (${i}/${count})...`;
-                  brotatoProgressBar.style.width = percent + "%";
-              }
-              return URL.createObjectURL(new Blob(buffers));
-          }
-
-          window.godotRunStart = async function() {
-              brotatoStatusText.innerText = "Initializing Engine...";
-              brotatoProgressBar.style.width = "80%";
-              try {
-                  const engine = new Engine(brotatoConfig);
-                  await engine.startGame({
-                      onProgress: (current, total) => {
-                          if (total > 0) {
-                              const percent = Math.floor((current / total) * 100);
-                              brotatoStatusText.innerText = `Loading Assets: ${percent}%`;
-                              brotatoProgressBar.style.width = percent + "%";
-                          }
-                      }
-                  });
-                  brotatoIsLoaded = true;
-                  document.getElementById('brotato-status').style.display = 'none';
-                  brotatoProgressBar.style.width = "100%";
-              } catch (e) {
-                  brotatoStatusText.innerText = "Error initializing engine: " + e.message;
-                  brotatoStatusText.style.color = "red";
-                  console.error("Godot engine error:", e);
-              }
-          };
-
-          try {
-              const [pckUrl, wasmUrl] = await Promise.all([
-                  mergeFiles("index.pck", 7),
-                  mergeFiles("index.wasm", 2)
-              ]);
-
-              window.fetch = async function (url, ...args) {
-                  if (url.includes("index.pck")) return originalFetch(pckUrl, ...args);
-                  if (url.includes("index.wasm")) return originalFetch(wasmUrl, ...args);
-                  return originalFetch(url, ...args);
-              };
-
-              // Dynamically load the Godot Engine script if not already loaded
-              if (!window.Engine) {
-                  const script = document.createElement('script');
-                  script.src = `${brotatoBaseUrl}index.js`;
-                  script.onload = () => window.godotRunStart();
-                  script.onerror = () => {
-                      brotatoStatusText.innerText = "Error loading Godot Engine script.";
-                      brotatoStatusText.style.color = "red";
-                  };
-                  document.body.appendChild(script);
-              } else {
-                  window.godotRunStart();
-              }
-          } catch (e) {
-              brotatoStatusText.innerText = "Error: " + e.message;
-              brotatoStatusText.style.color = "red";
-              console.error("Brotato loading error:", e);
-          }
+      function populate(data, id, isP) {
+        data.forEach(x => {
+          const c = document.createElement('div');
+          c.className = 'link-card';
+          c.onclick = () => isP ? openProxy(x.url) : alert('Launching Game...');
+          const icon = isP ? `https://www.google.com/s2/favicons?domain=${x.url}&sz=128` : x.img;
+          c.innerHTML = `<img src="${icon}"><span>${x.name}</span>`;
+          document.getElementById(id).appendChild(c);
+        });
       }
+      populate(games, 'games-view', true);
+      populate(native, 'regular-games-view', false);
 
-      function showBrotato() {
-          document.getElementById('app-interface').classList.remove('show-app');
-          document.getElementById('landing').classList.add('hidden');
-          document.getElementById('landing').style.display = 'none';
-          document.getElementById('brotato-container').style.display = 'flex';
-          document.getElementById('brotato-status').style.display = 'none';
-          document.body.style.overflow = 'hidden';
-      }
-
-      function hideBrotato() {
-          document.getElementById('brotato-container').style.display = 'none';
-          document.getElementById('app-interface').classList.add('show-app');
-          document.body.style.overflow = 'auto'; // Restore scrolling
-          // You might want to add a way to stop the Brotato game here if needed
-      }
-
-      // Add a close button or escape key listener for Brotato
-      document.addEventListener('keydown', function(e) {
-          if (document.getElementById('brotato-container').style.display === 'flex') {
-              if (e.key === 'Escape') {
-                  hideBrotato();
-              }
-          }
-      });
-
-      // Populate initial games
-      const gamesView = document.getElementById('games-view');
-      const regularGamesView = document.getElementById('regular-games-view');
-      populateGames(games, gamesView);
-      populateGames(regularGames, regularGamesView, false);
-
-      function startApp() { document.getElementById('landing').classList.add('hidden'); setTimeout(() => { document.getElementById('landing').style.display = 'none'; document.getElementById('app-interface').classList.add('show-app'); switchTab('games'); }, 500); }
-      function switchTab(tab) {
-        const views = { 'games': 'games-view', 'regular-games': 'regular-games-view', 'settings': 'settings-view' };
-        const tabs = { 'games': 'tab-games', 'regular-games': 'tab-regular-games', 'settings': 'tab-settings' };
-        Object.keys(views).forEach(k => { document.getElementById(views[k]).classList.remove('active'); document.getElementById(tabs[k]).className = 'tab-btn inactive-tab'; });
-        document.getElementById(views[tab]).classList.add('active'); document.getElementById(tabs[tab]).className = 'tab-btn active-tab';
-
-        // Hide Brotato if another tab is selected
-        if (tab !== 'regular-games' && document.getElementById('brotato-container').style.display === 'flex') {
-             hideBrotato();
-        }
-      }
-
-      function openProxy(url) {
-        const win = window.open('about:blank', '_blank');
-        if (!win) return alert('Pop-up blocked!');
-        const title = document.getElementById('mask-title').value;
-        const icon = document.getElementById('mask-icon').value;
-        win.document.write(`<html><head><title>${title}</title><link rel="icon" href="${icon}"><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="${url}" referrerpolicy="no-referrer"></iframe></body></html>`);
-        win.document.close();
-      }
-      function launchCustom() { const val = document.getElementById('custom-url').value; if (val) openProxy(val.startsWith('http') ? val : 'https://' + val); }
-      function cloakCurrent() { openProxy(window.location.href); }
-
-      const phrases = ['Made for Students', 'By Makar', 'Henlo', 'Universe V2'];
-      let pIdx = 0;
-      const pDisp = document.getElementById('phrase-display');
+      const phrases = ['Made for Students, By Makar', 'Enjoy!', 'Universe V2', 'Wass'];
+      let pi = 0;
       setInterval(() => {
-        pDisp.style.opacity = 0;
-        setTimeout(() => { pIdx = (pIdx + 1) % phrases.length; pDisp.innerText = phrases[pIdx]; pDisp.style.color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 65%)`; pDisp.style.opacity = 1; }, 500);
-      }, 5000);
+        const d = document.getElementById('phrase-display');
+        d.style.opacity = 0;
+        setTimeout(() => { pi = (pi + 1) % phrases.length; d.innerText = phrases[pi]; d.style.opacity = 1; }, 500);
+      }, 4000);
     </script>
   </body>
 </html>
